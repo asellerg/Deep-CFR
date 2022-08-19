@@ -2,6 +2,7 @@
 
 
 import copy
+from os.path import join as ospj
 
 import torch
 from PokerRL.game import bet_sets
@@ -224,6 +225,7 @@ class TrainingProfile(TrainingProfileBase):
             }
         )
 
+        self.path_strategy_nets = ospj(self._data_path, "strategy_nets")
         self.nn_type = nn_type
         self.online = online
         self.n_traversals_per_iter = n_traversals_per_iter

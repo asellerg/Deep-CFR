@@ -1,3 +1,4 @@
+import gc
 import os
 import pickle
 
@@ -132,6 +133,7 @@ class LearnerActor(WorkerBase):
             self._ray.remote(self._chief_handle.add_scalar,
                              self._exp_mem_usage, "Debug/MemoryUsage/LA", cfr_iter,
                              process.memory_info().rss)
+        gc.collect()
 
     def update(self, adv_state_dicts=None, avrg_state_dicts=None):
         """
@@ -156,6 +158,7 @@ class LearnerActor(WorkerBase):
                 self._avrg_wrappers[p_id].load_net_state_dict(
                     state_dict=self._ray.state_dict_to_torch(self._ray.get(avrg_state_dicts[p_id]),
                                                              device=self._avrg_wrappers[p_id].device))
+        gc.collect()
 
     def get_loss_last_batch_adv(self, p_id):
         return self._adv_wrappers[p_id].loss_last_batch

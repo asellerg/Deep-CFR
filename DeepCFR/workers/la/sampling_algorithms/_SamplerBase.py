@@ -2,6 +2,9 @@ import torch
 
 from PokerRL.game.PokerEnvStateDictEnums import EnvDictIdxs
 
+from poker_ai.utils.algos import calculate_preflop_strategy
+import numpy as np
+
 
 class SamplerBase:
 
@@ -70,12 +73,15 @@ class SamplerBase:
         # """""""""""""""""""""""""
         # The players strategy
         # """""""""""""""""""""""""
-        a_probs = iteration_strats[p_id_acting].get_a_probs(
-            pub_obses=[current_pub_obs],
-            range_idxs=[range_idx],
-            legal_actions_lists=[legal_actions_list],
-            to_np=False
-        )[0]
+        if self._env_wrapper.env.current_round == 0:
+            a_probs = torch.FloatTensor(list(calculate_preflop_strategy(self._env_wrapper.env.poker_ai_state, include_all_in=False).values()))
+        else:
+            a_probs = iteration_strats[p_id_acting].get_a_probs(
+                pub_obses=[current_pub_obs],
+                range_idxs=[range_idx],
+                legal_actions_lists=[legal_actions_list],
+                to_np=False
+            )[0]
 
         # """""""""""""""""""""""""
         # Adds to opponent's

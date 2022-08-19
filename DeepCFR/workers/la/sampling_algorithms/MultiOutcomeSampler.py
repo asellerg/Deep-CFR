@@ -4,6 +4,8 @@ import torch
 from DeepCFR.workers.la.sampling_algorithms._SamplerBase import SamplerBase as _SamplerBase
 from PokerRL.rl import rl_util
 
+from poker_ai.utils.algos import calculate_preflop_strategy
+
 
 class MultiOutcomeSampler(_SamplerBase):
     """
@@ -85,12 +87,15 @@ class MultiOutcomeSampler(_SamplerBase):
         _idxs = _idxs[:n_actions_to_smpl]
         actions = [legal_actions_list[i] for i in _idxs]
 
-        strat_i = iteration_strats[traverser].get_a_probs(
-            pub_obses=[current_pub_obs],
-            range_idxs=[traverser_range_idx],
-            legal_actions_lists=[legal_actions_list],
-            to_np=True
-        )[0]
+        if self._env_wrapper.env.current_round == 0:
+            strat_i = torch.FloatTensor(list(calculate_preflop_strategy(self._env_wrapper.env.poker_ai_state, include_all_in=False).values()))
+        else:
+            strat_i = iteration_strats[traverser].get_a_probs(
+                pub_obses=[current_pub_obs],
+                range_idxs=[traverser_range_idx],
+                legal_actions_lists=[legal_actions_list],
+                to_np=True
+            )[0]
 
         cumm_rew = 0.0
         aprx_imm_reg = torch.zeros(size=(self._env_bldr.N_ACTIONS,),
@@ -100,8 +105,14 @@ class MultiOutcomeSampler(_SamplerBase):
         # """""""""""""""""""""""""
         # Create next states
         # """""""""""""""""""""""""
+        curr_poker_ai_state = self._env_wrapper.env.poker_ai_state.copy()
         for _c, a in enumerate(actions):
+            self._env_wrapper.env.poker_ai_state = curr_poker_ai_state
             strat_i_a = strat_i[a]
+            if strat_i_a == 0.0:
+                aprx_imm_reg[a] = 0.0
+                continue
+
 
             # Re-initialize environment after one action-branch loop finished with current state and random future
             if _c > 0:

@@ -124,7 +124,7 @@ class Chief(_ChiefBase):
             file_util.create_dir_if_not_exist(path)
             file_util.do_pickle(obj=iter_strat.state_dict(),
                                 path=path,
-                                file_name=str(iter_strat.cfr_iteration) + "_P" + str(iter_strat.owner) + ".pkl"
+                                file_name=str(iter_strat.cfr_iteration) + "_P" + str(iter_strat.owner)
                                 )
 
         if self._t_prof.log_verbose:

@@ -255,10 +255,16 @@ class EvalAgentDeepCFR(_EvalAgentBase):
             else:
                 a_probs_all_hands = None  # not needed
 
+                pub_obses = [self._internal_env_wrapper.get_current_obs()]
+                range_idxs = np.array([range_idx], dtype=np.int32)
+                legal_actions_lists = [self._internal_env_wrapper.env.get_legal_actions()]
+                # print(f'pub_obses: {pub_obses}')
+                # print(f'range_idxs: {range_idxs}')
+                # print(f'legal_actions_lists: {legal_actions_lists}')
                 a_probs = self.avrg_net_policies[p_id_acting].get_a_probs(
-                    pub_obses=[self._internal_env_wrapper.get_current_obs()],
-                    range_idxs=np.array([range_idx], dtype=np.int32),
-                    legal_actions_lists=[self._internal_env_wrapper.env.get_legal_actions()]
+                    pub_obses=pub_obses,
+                    range_idxs=range_idxs,
+                    legal_actions_lists=legal_actions_lists
                 )[0]
 
             action = np.random.choice(np.arange(self.env_bldr.N_ACTIONS), p=a_probs)

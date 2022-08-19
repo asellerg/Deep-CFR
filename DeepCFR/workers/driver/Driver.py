@@ -1,3 +1,5 @@
+import time
+
 from DeepCFR.EvalAgentDeepCFR import EvalAgentDeepCFR
 from DeepCFR.workers.driver._HighLevelAlgo import HighLevelAlgo
 from PokerRL.rl.base_cls.workers.DriverBase import DriverBase
@@ -80,7 +82,7 @@ class Driver(DriverBase):
             # Maybe train AVRG
             # """"""""""""""""
             avrg_times = None
-            if self._AVRG and self._any_eval_needs_avrg_net():
+            if self._AVRG:
                 avrg_times = self.algo.train_average_nets(cfr_iter=_iter_nr)
 
             # """"""""""""""""
@@ -114,12 +116,12 @@ class Driver(DriverBase):
                     "\n"
                 )
 
-            self._cfr_iter += 1
-
             # """"""""""""""""
             # Checkpoint
             # """"""""""""""""
             self.periodically_checkpoint()
+
+            self._cfr_iter += 1
 
     def _any_eval_needs_avrg_net(self):
         for e in list(self.eval_masters.values()):
@@ -136,11 +138,11 @@ class Driver(DriverBase):
             ])
 
         # Delete past checkpoints
-        s = [self._cfr_iter]
-        if self._cfr_iter > self._t_prof.checkpoint_freq + 1:
-            s.append(self._cfr_iter - self._t_prof.checkpoint_freq)
+        # s = [self._cfr_iter]
+        # if self._cfr_iter > self._t_prof.checkpoint_freq + 1:
+        #     s.append(self._cfr_iter - self._t_prof.checkpoint_freq)
 
-        self._delete_past_checkpoints(steps_not_to_delete=s)
+        # self._delete_past_checkpoints(steps_not_to_delete=s)
 
     def load_checkpoint(self, step, name_to_load):
         # Call on all other workers sequentially to be safe against RAM overload
